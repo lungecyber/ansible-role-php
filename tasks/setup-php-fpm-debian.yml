@@ -1,0 +1,66 @@
+---
+- name: Install php-fpm
+  ansible.builtin.apt:
+    name: "php{{ php_version }}-fpm"
+    state: "{{ (php_fpm_presence is true) | ternary('present', 'absnet') }}"
+
+- name: Run php-fpm configuration tasks
+  when: php_fpm_presence is true
+  block:
+    - name: Apply base php-fpm configuration
+      community.general.ini_file:
+        path: "{{ php_conf_path }}/fpm/php-fpm.conf"
+        section: "{{ item.section }}"
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        state: present
+      with_items: "{{ php_fpm_base_conf }}"
+      notify: Restart php-fpm
+
+    - name: Configure php-fpm
+      community.general.ini_file:
+        path: "{{ php_conf_path }}/fpm/php-fpm.conf"
+        section: "{{ item.section }}"
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        state: present
+      with_items: "{{ php_fpm_conf }}"
+      when: php_fpm_conf is defined
+      notify: Restart php-fpm
+
+    - name: Apply base php-fpm pool configuration
+      community.general.ini_file:
+        path: "{{ php_conf_path }}/fpm/pool.d/www.conf"
+        section: "{{ item.section }}"
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        state: present
+      with_items: "{{ php_fpm_base_pool_conf }}"
+      notify: Restart php-fpm
+
+    - name: Configure php-fpm pools
+      community.general.ini_file:
+        path: "{{ php_conf_path }}/fpm/pool.d/www.conf"
+        section: "{{ item.section }}"
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        state: present
+      with_items: "{{ php_fpm_pools_conf }}"
+      when: php_fpm_pools_conf is defined
+      notify: Restart php-fpm
+
+    - name: Configure fpm php ini
+      community.general.ini_file:
+        path: "{{ php_conf_path }}/fpm/php.ini"
+        section: "{{ item.section }}"
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        state: present
+      with_items: "{{ php_ini_fpm }}"
+      notify: Restart php-fpm
+
+    - name: Enable php-fpm service
+      ansible.builtin.service:
+        name: php{{ php_version }}-fpm
+        state: started
+        enabled: true

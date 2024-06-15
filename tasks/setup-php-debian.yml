@@ -1,0 +1,31 @@
+---
+- name: Download Ondrej gpg public key
+  ansible.builtin.get_url:
+    url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x{{ gpg_fingerprint }}"
+    dest: /etc/apt/trusted.gpg.d/ondrej-php.asc
+
+- name: Run gpg dry run and extract fingerprint
+  ansible.builtin.shell: gpg --dry-run --quiet --no-keyring --import --import-options import-show /etc/apt/trusted.gpg.d/ondrej-php.asc
+  register: dry_run_result
+
+- name: Verify the fingerprint and fail playbook if no match
+  ansible.builtin.fail:
+    msg: Result fingerprint does not match the official fingerprint
+  when: "gpg_fingerprint not in dry_run_result.stdout"
+
+- name: Add Ondrej php repo to sources
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/ondrej-php.asc] https://ppa.launchpadcontent.net/ondrej/php/ubuntu {{ ansible_distribution_release }} main"
+    state: present
+    update_cache: true
+
+- name: Install php
+  ansible.builtin.apt:
+    name: "php{{ php_version }}"
+    state: present
+
+- name: Install php Packages
+  ansible.builtin.apt:
+    name: "{{ php_packages }}"
+    state: present
+  when: php_packages is defined

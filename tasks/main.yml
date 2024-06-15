@@ -1,0 +1,5 @@
+- name: Include OS-specific PHP configuration tasks
+  ansible.builtin.include_tasks: "setup-php-{{ ansible_os_family | lower }}.yml"
+
+- name: Include OS-specific PHP-FPM configuration tasks
+  ansible.builtin.include_tasks: "setup-php-fpm-{{ ansible_os_family | lower }}.yml"
