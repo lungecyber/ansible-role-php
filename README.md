@@ -16,7 +16,10 @@
 | php_ini_fpm | defines configuration of fpm php.ini file | List of Dictionaries | See defaults/main.yml |
 | php_fpm_base_conf | defines global configuration of php-fpm.conf file | List of Dictionaries | See vars/main.yml |
 | php_fpm_base_pool_conf | defines configuration of php-fpm.conf file | List of Dictionaries | See vars/main.yml |
-
+| composer_version | defines which version of composer will be installed | String | 2.7.7 |
+| composer_executable_path | defines the path of where composer will be installed | String | /usr/local/bin/composer`composer_version`|
+| composer_owner_username | defines who will own the the executable | String | www-data |
+| composer_owner_group | defines which group will own the the executable | String | www-data |
 
 
 `Example:`

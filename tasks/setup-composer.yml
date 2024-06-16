@@ -1,0 +1,24 @@
+---
+- name: Download composer installer
+  ansible.builtin.get_url:
+    url: https://getcomposer.org/installer
+    dest: /tmp/composer-setup.php
+    checksum: sha384:dac665fdc30fdd8ec78b38b9800061b4150413ff2e3b6f88543c636f7cd84f6db9189d43a81e5503cda447da73c7e5b6
+
+- name: Install composer
+  ansible.builtin.command: "php composer-setup.php --version={{ composer_version }} --filename=composer{{ composer_version }}"
+  args:
+    chdir: /tmp
+
+- name: Move composer to defined path
+  ansible.builtin.command: "mv /tmp/composer{{ composer_version }} {{ composer_executable_path }}"
+  args:
+    chdir: /tmp
+    creates: "{{ composer_executable_path }}"
+    removes: "/tmp/composer{{ composer_version }}"
+
+- name: Change composer executable ownership
+  ansible.builtin.file:
+    path: "{{ composer_executable_path }}"
+    owner: "{{ composer_owner_username }}"
+    group: "{{ composer_owner_group }}"
